@@ -23,7 +23,7 @@ type KeyMap struct {
 func (k KeyMap) ShortHelp() []key.Binding {
 	var kb []key.Binding
 
-	if k.State == "creating" || k.State == "deleting" {
+	if k.State == "creating" || k.State == "deleting" || k.State == "merge" {
 		kb = append(kb, k.Cancel, k.ForceQuit)
 	}
 

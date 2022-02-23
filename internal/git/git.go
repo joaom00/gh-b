@@ -106,3 +106,14 @@ func TrackBranch(branch string) string {
 
 	return string(out)
 }
+
+func MergeBranch(branch string) string {
+	cmd := exec.Command("git", "merge", branch)
+
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return string(out)
+	}
+
+	return string(out)
+}

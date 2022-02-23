@@ -65,12 +65,14 @@ const (
 	browsing state = iota
 	creating
 	deleting
+	merge
 )
 
 type Model struct {
 	items  []item
 	create *createModel
 	delete *deleteModel
+	merge  *mergeModel
 	keyMap *keys.KeyMap
 	list   list.Model
 	style  styles.Styles
@@ -109,6 +111,7 @@ func NewModel() Model {
 	return Model{
 		create: newCreateModel(),
 		delete: newDeleteModel(),
+		merge:  newMergeModel(),
 		keyMap: keys.NewKeyMap(),
 		list:   l,
 		style:  s,
@@ -141,6 +144,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case deleting:
 		return deleteUpdate(msg, m)
 
+	case merge:
+		return mergeUpdate(msg, m)
+
 	default:
 		return m, nil
 	}
@@ -156,6 +162,9 @@ func (m Model) View() string {
 
 	case deleting:
 		return m.deleteView()
+
+	case merge:
+		return m.mergeView()
 
 	default:
 		return ""
@@ -190,6 +199,12 @@ func listUpdate(msg tea.Msg, m Model) (tea.Model, tea.Cmd) {
 				fmt.Println("\n", out)
 			}
 			return m, tea.Quit
+
+		case key.Matches(msg, m.keyMap.Merge):
+			m.state = merge
+			m.keyMap.State = "merge"
+			m.merge.confirmInput.Focus()
+			m.updateKeybindins()
 
 		case key.Matches(msg, m.keyMap.Enter):
 			i, ok := m.list.SelectedItem().(item)
