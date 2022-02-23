@@ -20,6 +20,7 @@ type createModel struct {
 
 func newCreateModel() *createModel {
 	ti := textinput.New()
+	ti.Placeholder = "Try feature..."
 
 	ci := textinput.New()
 	ci.CharLimit = 1
@@ -81,24 +82,29 @@ func createUpdate(msg tea.Msg, m Model) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) createView() string {
-	label := lipgloss.NewStyle().
-		Padding(0, 1).
-		Foreground(lipgloss.Color("#FFF7DB")).
-		Background(lipgloss.Color("#F25D94")).
-		Render("Type name of the new branch:")
+	title := m.style.Title.MarginLeft(2).Render("Type name of the new branch")
+	textInput := lipgloss.NewStyle().MarginLeft(3).Render(m.create.textinput.View())
+	help := lipgloss.NewStyle().MarginLeft(3).Render(m.create.help.View(m.keyMap))
 
 	if m.create.showConfirmInput {
-		confirmInput := lipgloss.JoinHorizontal(
-			lipgloss.Left,
-			fmt.Sprintf("Create new branch \"%s\"? [y/n]:", m.create.textinput.Value()),
-			m.create.confirmInput.View(),
-		)
+		branch := lipgloss.NewStyle().
+			Foreground(lipgloss.AdaptiveColor{Light: "#EE6FF8", Dark: "#EE6FF8"}).
+			Render(m.create.textinput.Value())
+
+		confirmInput := lipgloss.NewStyle().
+			MarginLeft(3).
+			Render(lipgloss.JoinHorizontal(
+				lipgloss.Left,
+				fmt.Sprintf("Create new branch \"%s\"? [y/n]:", branch),
+				m.create.confirmInput.View(),
+			))
+
 		return lipgloss.NewStyle().
-			Margin(2, 3).
-			Render(lipgloss.JoinVertical(lipgloss.Left, label, "\n", m.create.textinput.View(), "\n", confirmInput, "\n", m.create.help.View(m.keyMap)))
+			MarginTop(1).
+			Render(lipgloss.JoinVertical(lipgloss.Left, title, "\n", textInput, "\n", confirmInput, "\n", help))
 	}
 
 	return lipgloss.NewStyle().
-		Margin(2, 3).
-		Render(lipgloss.JoinVertical(lipgloss.Left, label, "\n", m.create.textinput.View(), "\n", m.create.help.View(m.keyMap)))
+		MarginTop(1).
+		Render(lipgloss.JoinVertical(lipgloss.Left, title, "\n", textInput, "\n", help))
 }

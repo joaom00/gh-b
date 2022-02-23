@@ -32,7 +32,6 @@ func GetAllBranches() (branches []Branch, err error) {
 		"-committerdate",
 		"--sort",
 		"-upstream",
-		"upstream",
 		"--format",
 		format,
 	)
@@ -87,7 +86,18 @@ func CreateBranch(branch string) string {
 }
 
 func DeleteBranch(branch string) string {
-	cmd := exec.Command("git", "branch", "-d", branch)
+	cmd := exec.Command("git", "branch", "-D", branch)
+
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return string(out)
+	}
+
+	return string(out)
+}
+
+func TrackBranch(branch string) string {
+	cmd := exec.Command("git", "checkout", "--track", branch)
 
 	out, err := cmd.CombinedOutput()
 	if err != nil {

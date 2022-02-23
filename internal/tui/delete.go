@@ -35,7 +35,7 @@ func deleteUpdate(msg tea.Msg, m Model) (tea.Model, tea.Cmd) {
 			case "y", "Y", "":
 				i, ok := m.list.SelectedItem().(item)
 				if ok {
-					out := git.DeleteBranch(string(i))
+					out := git.DeleteBranch(i.Name)
 
 					fmt.Println("\n", out)
 					return m, tea.Quit
@@ -68,8 +68,8 @@ func (m Model) deleteView() string {
 	i, ok := m.list.SelectedItem().(item)
 	if ok {
 		branchName = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("170")).
-			Render(string(i))
+			Foreground(lipgloss.AdaptiveColor{Light: "#EE6FF8", Dark: "#EE6FF8"}).
+			Render(i.Name)
 	}
 
 	label := fmt.Sprintf("Do you really wanna delete branch \"%s\"? [Y/n]", branchName)
@@ -81,6 +81,7 @@ func (m Model) deleteView() string {
 	)
 
 	return lipgloss.NewStyle().
-		Margin(1, 4).
+		MarginTop(1).
+		MarginLeft(4).
 		Render(lipgloss.JoinVertical(lipgloss.Left, confirmInput, "\n", m.delete.help.View(m.keyMap)))
 }

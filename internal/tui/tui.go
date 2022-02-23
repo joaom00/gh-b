@@ -7,32 +7,25 @@ import (
 
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
-	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/joaom00/gh-b/internal/git"
 	"github.com/joaom00/gh-b/internal/tui/keys"
+	"github.com/joaom00/gh-b/internal/tui/styles"
 )
 
-var (
-	titleStyle        = lipgloss.NewStyle().MarginLeft(2)
-	itemStyle         = lipgloss.NewStyle().PaddingLeft(4)
-	selectedItemStyle = lipgloss.NewStyle().PaddingLeft(2).Foreground(lipgloss.Color("170"))
-	paginationStyle   = list.DefaultStyles().PaginationStyle.PaddingLeft(4)
-	helpStyle         = list.DefaultStyles().HelpStyle.PaddingLeft(4).PaddingBottom(1)
-	quitTextStyle     = lipgloss.NewStyle().Margin(1, 0, 2, 4)
-)
-
-type item string
-
-func (i item) FilterValue() string { return string(i) }
-
-type itemDelegate struct {
+type item struct {
 	Name          string
 	AuthorName    string
 	CommitterDate string
 	Track         string
 	RemoteName    string
+}
+
+func (i item) FilterValue() string { return i.Name }
+
+type itemDelegate struct {
+	style *styles.Styles
 }
 
 func (d itemDelegate) Height() int                               { return 1 }
@@ -44,14 +37,26 @@ func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list
 		return
 	}
 
-	fn := itemStyle.Render
+	title := d.style.NormalTitle.Render
+	desc := d.style.NormalDesc.Render
+
 	if index == m.Index() {
-		fn = func(s string) string {
-			return selectedItemStyle.Render("> " + s)
+		title = func(s string) string {
+			return d.style.SelectedTitle.Render("> " + s)
+		}
+		desc = func(s string) string {
+			return d.style.SelectedDesc.Render(s)
 		}
 	}
 
-	fmt.Fprint(w, fn(string(i)))
+	branch := title(i.Name)
+	author := desc(i.AuthorName)
+	committerDate := desc(fmt.Sprintf("(%s)", i.CommitterDate))
+
+	itemListStyle := lipgloss.NewStyle().
+		Render(fmt.Sprintf("%s %s %s", branch, author, committerDate))
+
+	fmt.Fprint(w, itemListStyle)
 }
 
 type state int
@@ -63,13 +68,13 @@ const (
 )
 
 type Model struct {
-	items       []item
-	createInput textinput.Model
-	create      *createModel
-	delete      *deleteModel
-	keyMap      *keys.KeyMap
-	list        list.Model
-	state       state
+	items  []item
+	create *createModel
+	delete *deleteModel
+	keyMap *keys.KeyMap
+	list   list.Model
+	style  styles.Styles
+	state  state
 }
 
 func NewModel() Model {
@@ -80,26 +85,34 @@ func NewModel() Model {
 
 	items := []list.Item{}
 	for _, b := range branches {
-		items = append(items, item(b.Name))
+		items = append(items, item{
+			Name:          b.Name,
+			AuthorName:    b.AuthorName,
+			CommitterDate: b.CommitterDate,
+			Track:         b.Track,
+			RemoteName:    b.RemoteName,
+		})
 	}
 
 	const defaultWidth = 20
 	const listHeight = 20
 
-	l := list.New(items, itemDelegate{}, defaultWidth, listHeight)
+	s := styles.DefaultStyles()
+
+	l := list.New(items, itemDelegate{style: &s}, defaultWidth, listHeight)
 	l.Title = "Your Branches"
 	l.SetShowStatusBar(false)
 	l.SetFilteringEnabled(false)
-	l.Styles.Title = titleStyle
-	l.Styles.PaginationStyle = paginationStyle
-	l.Styles.HelpStyle = helpStyle
+	l.Styles.PaginationStyle = s.Pagination
+	l.Styles.HelpStyle = s.Help
 
 	return Model{
-		state:  browsing,
-		list:   l,
 		create: newCreateModel(),
 		delete: newDeleteModel(),
 		keyMap: keys.NewKeyMap(),
+		list:   l,
+		style:  s,
+		state:  browsing,
 	}
 }
 
@@ -169,10 +182,19 @@ func listUpdate(msg tea.Msg, m Model) (tea.Model, tea.Cmd) {
 			m.delete.confirmInput.Focus()
 			m.updateKeybindins()
 
+		case key.Matches(msg, m.keyMap.Track):
+			i, ok := m.list.SelectedItem().(item)
+			if ok {
+				out := git.TrackBranch(i.Name)
+
+				fmt.Println("\n", out)
+			}
+			return m, tea.Quit
+
 		case key.Matches(msg, m.keyMap.Enter):
 			i, ok := m.list.SelectedItem().(item)
 			if ok {
-				out := git.CheckoutBranch(string(i))
+				out := git.CheckoutBranch(i.Name)
 
 				fmt.Println("\n", out)
 			}
