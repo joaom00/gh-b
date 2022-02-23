@@ -9,8 +9,6 @@ type Branch struct {
 	Name          string
 	AuthorName    string
 	CommitterDate string
-	Track         string
-	RemoteName    string
 }
 
 func (i Branch) FilterValue() string { return "" }
@@ -18,8 +16,6 @@ func (i Branch) FilterValue() string { return "" }
 const format = `branch:%(refname:short)%(HEAD)
 authorname:%(authorname)
 committerdate:%(committerdate:relative)
-track:%(upstream:track)
-remotename:%(upstream:short)
 `
 
 func GetAllBranches() (branches []Branch, err error) {
@@ -49,14 +45,10 @@ func GetAllBranches() (branches []Branch, err error) {
 		branch := strings.TrimPrefix(fields[0], "branch:")
 		authorname := strings.TrimPrefix(fields[1], "authorname:")
 		committerdate := strings.TrimPrefix(fields[2], "committerdate:")
-		track := strings.TrimPrefix(fields[3], "track:")
-		remotename := strings.TrimPrefix(fields[4], "remotename:")
 		branches = append(branches, Branch{
 			Name:          strings.TrimSpace(branch),
 			AuthorName:    strings.TrimSpace(authorname),
 			CommitterDate: strings.TrimSpace(committerdate),
-			Track:         strings.TrimSpace(track),
-			RemoteName:    strings.TrimSpace(remotename),
 		})
 	}
 
@@ -109,6 +101,17 @@ func TrackBranch(branch string) string {
 
 func MergeBranch(branch string) string {
 	cmd := exec.Command("git", "merge", branch)
+
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return string(out)
+	}
+
+	return string(out)
+}
+
+func RebaseBranch(branch string) string {
+	cmd := exec.Command("git", "rebase", branch)
 
 	out, err := cmd.CombinedOutput()
 	if err != nil {

@@ -14,13 +14,7 @@ import (
 	"github.com/joaom00/gh-b/internal/tui/styles"
 )
 
-type item struct {
-	Name          string
-	AuthorName    string
-	CommitterDate string
-	Track         string
-	RemoteName    string
-}
+type item git.Branch
 
 func (i item) FilterValue() string { return i.Name }
 
@@ -66,6 +60,7 @@ const (
 	creating
 	deleting
 	merge
+	rebase
 )
 
 type Model struct {
@@ -73,6 +68,7 @@ type Model struct {
 	create *createModel
 	delete *deleteModel
 	merge  *mergeModel
+	rebase *rebaseModel
 	keyMap *keys.KeyMap
 	list   list.Model
 	style  styles.Styles
@@ -91,8 +87,6 @@ func NewModel() Model {
 			Name:          b.Name,
 			AuthorName:    b.AuthorName,
 			CommitterDate: b.CommitterDate,
-			Track:         b.Track,
-			RemoteName:    b.RemoteName,
 		})
 	}
 
@@ -112,6 +106,7 @@ func NewModel() Model {
 		create: newCreateModel(),
 		delete: newDeleteModel(),
 		merge:  newMergeModel(),
+		rebase: newRebaseModel(),
 		keyMap: keys.NewKeyMap(),
 		list:   l,
 		style:  s,
@@ -147,6 +142,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case merge:
 		return mergeUpdate(msg, m)
 
+	case rebase:
+		return rebaseUpdate(msg, m)
+
 	default:
 		return m, nil
 	}
@@ -165,6 +163,9 @@ func (m Model) View() string {
 
 	case merge:
 		return m.mergeView()
+
+	case rebase:
+		return m.rebaseView()
 
 	default:
 		return ""
@@ -204,6 +205,12 @@ func listUpdate(msg tea.Msg, m Model) (tea.Model, tea.Cmd) {
 			m.state = merge
 			m.keyMap.State = "merge"
 			m.merge.confirmInput.Focus()
+			m.updateKeybindins()
+
+		case key.Matches(msg, m.keyMap.Rebase):
+			m.state = rebase
+			m.keyMap.State = "rebase"
+			m.rebase.confirmInput.Focus()
 			m.updateKeybindins()
 
 		case key.Matches(msg, m.keyMap.Enter):
