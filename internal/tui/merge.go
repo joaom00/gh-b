@@ -2,6 +2,7 @@ package tui
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
@@ -33,24 +34,28 @@ func mergeUpdate(msg tea.Msg, m Model) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keyMap.Enter):
 			switch m.delete.confirmInput.Value() {
 			case "y", "Y", "":
-				i, ok := m.list.SelectedItem().(item)
-				if ok {
+				if i, ok := m.list.SelectedItem().(item); ok {
+					i.Name = strings.TrimSuffix(i.Name, "*")
 					out := git.MergeBranch(i.Name)
 
-					fmt.Println("\n", out)
+					fmt.Println(m.styles.NormalTitle.Render(out))
+
 					return m, tea.Quit
 				}
 
 			case "n", "N":
 				m.merge.confirmInput.Reset()
 				m.state = browsing
+				m.updateKeybindins()
 
 			default:
 				m.merge.confirmInput.SetValue("")
 			}
+
 		case key.Matches(msg, m.keyMap.Cancel):
 			m.merge.confirmInput.Reset()
 			m.state = browsing
+			m.updateKeybindins()
 		}
 
 	case tea.WindowSizeMsg:
