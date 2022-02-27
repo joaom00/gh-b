@@ -67,7 +67,7 @@ func NewKeyMap() *KeyMap {
 		),
 		Track: key.NewBinding(
 			key.WithKeys("ctrl+t"),
-			key.WithHelp("ctrl+t", "Track currently selected branch"),
+			key.WithHelp("ctrl+t", "Track the currently selected branch"),
 		),
 		Merge: key.NewBinding(
 			key.WithKeys("ctrl+y"),
@@ -80,7 +80,7 @@ func NewKeyMap() *KeyMap {
 			key.WithKeys("ctrl+r"),
 			key.WithHelp(
 				"ctrl+r",
-				"Rebase currently selected branch, with confirmation",
+				"Rebase the currently selected branch, with confirmation",
 			),
 		),
 		Cancel: key.NewBinding(

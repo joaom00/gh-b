@@ -47,7 +47,7 @@ type Model struct {
 func NewModel() Model {
 	branches, err := git.GetAllBranches()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("not a git repository")
 	}
 
 	items := []list.Item{}
