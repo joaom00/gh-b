@@ -2,6 +2,7 @@ package tui
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
@@ -33,17 +34,18 @@ func rebaseUpdate(msg tea.Msg, m Model) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keyMap.Enter):
 			switch m.rebase.confirmInput.Value() {
 			case "y", "Y", "":
-				i, ok := m.list.SelectedItem().(item)
-				if ok {
+				if i, ok := m.list.SelectedItem().(item); ok {
+					i.Name = strings.TrimSuffix(i.Name, "*")
 					out := git.RebaseBranch(i.Name)
 
-					fmt.Println("\n", out)
+					fmt.Println(m.styles.NormalTitle.Copy().MarginTop(1).Render(out))
 					return m, tea.Quit
 				}
 
 			case "n", "N":
 				m.rebase.confirmInput.Reset()
 				m.state = browsing
+				m.updateKeybindins()
 
 			default:
 				m.rebase.confirmInput.SetValue("")
@@ -51,6 +53,7 @@ func rebaseUpdate(msg tea.Msg, m Model) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keyMap.Cancel):
 			m.rebase.confirmInput.Reset()
 			m.state = browsing
+			m.updateKeybindins()
 		}
 	case tea.WindowSizeMsg:
 		m.rebase.help.Width = msg.Width

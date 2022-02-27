@@ -2,6 +2,8 @@ package tui
 
 import (
 	"fmt"
+	"strings"
+	"time"
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
@@ -33,24 +35,32 @@ func deleteUpdate(msg tea.Msg, m Model) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keyMap.Enter):
 			switch m.delete.confirmInput.Value() {
 			case "y", "Y", "":
-				i, ok := m.list.SelectedItem().(item)
-				if ok {
+				if i, ok := m.list.SelectedItem().(item); ok {
+					i.Name = strings.TrimSuffix(i.Name, "*")
 					out := git.DeleteBranch(i.Name)
 
-					fmt.Println("\n", out)
-					return m, tea.Quit
+					fmt.Println(m.styles.NormalTitle.Render(out))
+
+					time.Sleep(time.Second * 1)
+
+					m.updateListItem()
+					m.state = browsing
+					m.updateKeybindins()
 				}
 
 			case "n", "N":
 				m.delete.confirmInput.Reset()
 				m.state = browsing
+				m.updateKeybindins()
 
 			default:
 				m.delete.confirmInput.SetValue("")
 			}
+
 		case key.Matches(msg, m.keyMap.Cancel):
 			m.delete.confirmInput.Reset()
 			m.state = browsing
+			m.updateKeybindins()
 		}
 	case tea.WindowSizeMsg:
 		m.delete.help.Width = msg.Width
@@ -65,8 +75,7 @@ func deleteUpdate(msg tea.Msg, m Model) (tea.Model, tea.Cmd) {
 func (m Model) deleteView() string {
 	var branchName string
 
-	i, ok := m.list.SelectedItem().(item)
-	if ok {
+	if i, ok := m.list.SelectedItem().(item); ok {
 		branchName = lipgloss.NewStyle().
 			Foreground(lipgloss.AdaptiveColor{Light: "#EE6FF8", Dark: "#EE6FF8"}).
 			Render(i.Name)

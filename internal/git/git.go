@@ -11,8 +11,6 @@ type Branch struct {
 	CommitterDate string
 }
 
-func (i Branch) FilterValue() string { return "" }
-
 const format = `branch:%(refname:short)%(HEAD)
 authorname:%(authorname)
 committerdate:%(committerdate:relative)
@@ -58,10 +56,7 @@ func GetAllBranches() (branches []Branch, err error) {
 func CheckoutBranch(branch string) string {
 	cmd := exec.Command("git", "checkout", branch)
 
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		return string(out)
-	}
+	out, _ := cmd.CombinedOutput()
 
 	return string(out)
 }
@@ -69,10 +64,7 @@ func CheckoutBranch(branch string) string {
 func CreateBranch(branch string) string {
 	cmd := exec.Command("git", "checkout", "-b", branch)
 
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		return string(out)
-	}
+	out, _ := cmd.CombinedOutput()
 
 	return string(out)
 }
@@ -80,10 +72,7 @@ func CreateBranch(branch string) string {
 func DeleteBranch(branch string) string {
 	cmd := exec.Command("git", "branch", "-D", branch)
 
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		return string(out)
-	}
+	out, _ := cmd.CombinedOutput()
 
 	return string(out)
 }
@@ -91,10 +80,7 @@ func DeleteBranch(branch string) string {
 func TrackBranch(branch string) string {
 	cmd := exec.Command("git", "checkout", "--track", branch)
 
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		return string(out)
-	}
+	out, _ := cmd.CombinedOutput()
 
 	return string(out)
 }
@@ -102,10 +88,7 @@ func TrackBranch(branch string) string {
 func MergeBranch(branch string) string {
 	cmd := exec.Command("git", "merge", branch)
 
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		return string(out)
-	}
+	out, _ := cmd.CombinedOutput()
 
 	return string(out)
 }
@@ -113,10 +96,7 @@ func MergeBranch(branch string) string {
 func RebaseBranch(branch string) string {
 	cmd := exec.Command("git", "rebase", branch)
 
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		return string(out)
-	}
+	out, _ := cmd.CombinedOutput()
 
 	return string(out)
 }
