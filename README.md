@@ -2,7 +2,7 @@
 
 [GitHub CLI](https://github.com/cli/cli) extension to manage your branches.
 
-[![asciicast](https://asciinema.org/a/xTlRoir8NfdLkWZwnpDOs2XrK.svg)](https://asciinema.org/a/xTlRoir8NfdLkWZwnpDOs2XrK)
+[![asciicast](https://asciinema.org/a/472292.svg)](https://asciinema.org/a/472292)
 
 ## Installation
 
