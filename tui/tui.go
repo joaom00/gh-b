@@ -8,9 +8,9 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/joaom00/gh-b/internal/git"
-	"github.com/joaom00/gh-b/internal/tui/keys"
-	"github.com/joaom00/gh-b/internal/tui/styles"
+	"github.com/joaom00/gh-b/git"
+	"github.com/joaom00/gh-b/tui/keys"
+	"github.com/joaom00/gh-b/tui/styles"
 )
 
 const (
@@ -33,11 +33,11 @@ const (
 )
 
 type Model struct {
-	items  []item
 	create *createModel
 	delete *deleteModel
 	merge  *mergeModel
 	rebase *rebaseModel
+	rename *renameModel
 	keyMap *keys.KeyMap
 	list   list.Model
 	styles styles.Styles
@@ -73,6 +73,7 @@ func NewModel() Model {
 		delete: newDeleteModel(),
 		merge:  newMergeModel(),
 		rebase: newRebaseModel(),
+		rename: newRenameModel(),
 		keyMap: keys,
 		list:   l,
 		styles: styles,

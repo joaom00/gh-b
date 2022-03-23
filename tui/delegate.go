@@ -7,8 +7,8 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/joaom00/gh-b/internal/tui/keys"
-	"github.com/joaom00/gh-b/internal/tui/styles"
+	"github.com/joaom00/gh-b/tui/keys"
+	"github.com/joaom00/gh-b/tui/styles"
 )
 
 type itemDelegate struct {

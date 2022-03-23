@@ -8,7 +8,7 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/joaom00/gh-b/internal/git"
+	"github.com/joaom00/gh-b/git"
 )
 
 type createModel struct {
