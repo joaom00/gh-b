@@ -7,8 +7,8 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/joaom00/gh-b/internal/tui/keys"
-	"github.com/joaom00/gh-b/internal/tui/styles"
+	"github.com/joaom00/gh-b/tui/keys"
+	"github.com/joaom00/gh-b/tui/styles"
 )
 
 type itemDelegate struct {
@@ -60,6 +60,6 @@ func (d itemDelegate) ShortHelp() []key.Binding {
 
 func (d itemDelegate) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{d.keys.Track, d.keys.Create, d.keys.Delete, d.keys.Merge, d.keys.Rebase},
+		{d.keys.Track, d.keys.Create, d.keys.Delete, d.keys.Merge, d.keys.Rebase, d.keys.Rename},
 	}
 }

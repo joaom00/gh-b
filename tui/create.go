@@ -8,7 +8,7 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/joaom00/gh-b/internal/git"
+	"github.com/joaom00/gh-b/git"
 )
 
 type createModel struct {
@@ -90,6 +90,7 @@ func createUpdate(msg tea.Msg, m Model) (tea.Model, tea.Cmd) {
 				m.create.inputs[1].Reset()
 				m.create.showConfirmInput = false
 				m.state = browsing
+				m.keyMap.State = "browsing"
 				m.updateKeybindins()
 
 				return m, nil

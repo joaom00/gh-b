@@ -9,7 +9,7 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/joaom00/gh-b/internal/git"
+	"github.com/joaom00/gh-b/git"
 )
 
 type rebaseModel struct {
@@ -45,6 +45,7 @@ func rebaseUpdate(msg tea.Msg, m Model) (tea.Model, tea.Cmd) {
 			case "n", "N":
 				m.rebase.confirmInput.Reset()
 				m.state = browsing
+				m.keyMap.State = "browsing"
 				m.updateKeybindins()
 
 			default:
@@ -53,6 +54,7 @@ func rebaseUpdate(msg tea.Msg, m Model) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keyMap.Cancel):
 			m.rebase.confirmInput.Reset()
 			m.state = browsing
+			m.keyMap.State = "browsing"
 			m.updateKeybindins()
 		}
 	case tea.WindowSizeMsg:

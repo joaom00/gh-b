@@ -8,9 +8,9 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/joaom00/gh-b/internal/git"
-	"github.com/joaom00/gh-b/internal/tui/keys"
-	"github.com/joaom00/gh-b/internal/tui/styles"
+	"github.com/joaom00/gh-b/git"
+	"github.com/joaom00/gh-b/tui/keys"
+	"github.com/joaom00/gh-b/tui/styles"
 )
 
 const (
@@ -30,14 +30,15 @@ const (
 	deleting
 	merge
 	rebasing
+	renaming
 )
 
 type Model struct {
-	items  []item
 	create *createModel
 	delete *deleteModel
 	merge  *mergeModel
 	rebase *rebaseModel
+	rename *renameModel
 	keyMap *keys.KeyMap
 	list   list.Model
 	styles styles.Styles
@@ -47,7 +48,7 @@ type Model struct {
 func NewModel() Model {
 	branches, err := git.GetAllBranches()
 	if err != nil {
-		log.Fatal("not a git repository")
+		log.Fatal("not a git repository", err)
 	}
 
 	items := []list.Item{}
@@ -56,6 +57,7 @@ func NewModel() Model {
 			Name:          b.Name,
 			AuthorName:    b.AuthorName,
 			CommitterDate: b.CommitterDate,
+			IsRemote:      b.IsRemote,
 		})
 	}
 
@@ -73,11 +75,20 @@ func NewModel() Model {
 		delete: newDeleteModel(),
 		merge:  newMergeModel(),
 		rebase: newRebaseModel(),
+		rename: newRenameModel(),
 		keyMap: keys,
 		list:   l,
 		styles: styles,
 		state:  browsing,
 	}
+}
+
+func (m Model) selectedItem() (item, bool) {
+	i, ok := m.list.SelectedItem().(item)
+
+	i.Name = strings.TrimSuffix(i.Name, "*")
+
+	return i, ok
 }
 
 func (m *Model) updateListItem() {
@@ -92,71 +103,53 @@ func (m *Model) updateListItem() {
 			Name:          b.Name,
 			AuthorName:    b.AuthorName,
 			CommitterDate: b.CommitterDate,
+			IsRemote:      b.IsRemote,
 		})
 	}
 
 	m.list.SetItems(items)
 }
 
-func (m Model) Init() tea.Cmd {
-	return nil
-}
-
-func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *Model) updateKeybindins() {
 	if m.list.SettingFilter() {
 		m.keyMap.Enter.SetEnabled(false)
 	}
 
-	switch msg := msg.(type) {
-	case tea.KeyMsg:
-		switch {
-		case key.Matches(msg, m.keyMap.Quit):
-			return m, tea.Quit
-
-		case key.Matches(msg, m.keyMap.ForceQuit):
-			return m, tea.Quit
-		}
-	}
 	switch m.state {
+	case creating, deleting, merge, rebasing, renaming:
+		m.keyMap.Enter.SetEnabled(true)
+		m.keyMap.Cancel.SetEnabled(true)
+		m.keyMap.ForceQuit.SetEnabled(true)
+
+		m.keyMap.Quit.SetEnabled(false)
+		m.keyMap.Delete.SetEnabled(false)
+		m.keyMap.Track.SetEnabled(false)
+		m.keyMap.Merge.SetEnabled(false)
+		m.keyMap.Rebase.SetEnabled(false)
+
+		m.list.KeyMap.AcceptWhileFiltering.SetEnabled(false)
+		m.list.KeyMap.CancelWhileFiltering.SetEnabled(false)
 	case browsing:
-		return listUpdate(msg, m)
+		m.keyMap.Enter.SetEnabled(true)
+		m.keyMap.Create.SetEnabled(true)
+		m.keyMap.Delete.SetEnabled(true)
+		m.keyMap.Merge.SetEnabled(true)
+		m.keyMap.Rebase.SetEnabled(true)
+		m.keyMap.Track.SetEnabled(true)
+		m.keyMap.ForceQuit.SetEnabled(true)
 
-	case creating:
-		return createUpdate(msg, m)
-
-	case deleting:
-		return deleteUpdate(msg, m)
-
-	case merge:
-		return mergeUpdate(msg, m)
-
-	case rebasing:
-		return rebaseUpdate(msg, m)
+		m.keyMap.Cancel.SetEnabled(false)
 
 	default:
-		return m, nil
-	}
-}
+		m.keyMap.Enter.SetEnabled(true)
+		m.keyMap.Create.SetEnabled(true)
+		m.keyMap.Delete.SetEnabled(true)
+		m.keyMap.Merge.SetEnabled(true)
+		m.keyMap.Rebase.SetEnabled(true)
+		m.keyMap.Track.SetEnabled(true)
+		m.keyMap.ForceQuit.SetEnabled(true)
 
-func (m Model) View() string {
-	switch m.state {
-	case browsing:
-		return "\n" + m.list.View()
-
-	case creating:
-		return m.createView()
-
-	case deleting:
-		return m.deleteView()
-
-	case merge:
-		return m.mergeView()
-
-	case rebasing:
-		return m.rebaseView()
-
-	default:
-		return ""
+		m.keyMap.Cancel.SetEnabled(false)
 	}
 }
 
@@ -212,6 +205,22 @@ func listUpdate(msg tea.Msg, m Model) (tea.Model, tea.Cmd) {
 			m.rebase.confirmInput.Focus()
 			m.updateKeybindins()
 
+		case key.Matches(msg, m.keyMap.Rename):
+			i, ok := m.selectedItem()
+			if !ok {
+				return m, nil
+			}
+
+			if i.IsRemote {
+				m.list.NewStatusMessage("We don't support renaming remote branch")
+				return m, nil
+			}
+
+			m.state = renaming
+			m.keyMap.State = "renaming"
+			m.rename.input.Focus()
+			m.updateKeybindins()
+
 		case key.Matches(msg, m.keyMap.Enter):
 			if i, ok := m.list.SelectedItem().(item); ok {
 				i.Name = strings.TrimSuffix(i.Name, "*")
@@ -235,45 +244,70 @@ func listUpdate(msg tea.Msg, m Model) (tea.Model, tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
-func (m *Model) updateKeybindins() {
+func (m Model) Init() tea.Cmd {
+	return nil
+}
+
+func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if m.list.SettingFilter() {
 		m.keyMap.Enter.SetEnabled(false)
 	}
 
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch {
+		case key.Matches(msg, m.keyMap.Quit):
+			return m, tea.Quit
+
+		case key.Matches(msg, m.keyMap.ForceQuit):
+			return m, tea.Quit
+		}
+	}
 	switch m.state {
-	case creating, deleting, merge, rebasing:
-		m.keyMap.Enter.SetEnabled(true)
-		m.keyMap.Cancel.SetEnabled(true)
-		m.keyMap.ForceQuit.SetEnabled(true)
-
-		m.keyMap.Quit.SetEnabled(false)
-		m.keyMap.Delete.SetEnabled(false)
-		m.keyMap.Track.SetEnabled(false)
-		m.keyMap.Merge.SetEnabled(false)
-		m.keyMap.Rebase.SetEnabled(false)
-
-		m.list.KeyMap.AcceptWhileFiltering.SetEnabled(false)
-		m.list.KeyMap.CancelWhileFiltering.SetEnabled(false)
 	case browsing:
-		m.keyMap.Enter.SetEnabled(true)
-		m.keyMap.Create.SetEnabled(true)
-		m.keyMap.Delete.SetEnabled(true)
-		m.keyMap.Merge.SetEnabled(true)
-		m.keyMap.Rebase.SetEnabled(true)
-		m.keyMap.Track.SetEnabled(true)
-		m.keyMap.ForceQuit.SetEnabled(true)
+		return listUpdate(msg, m)
 
-		m.keyMap.Cancel.SetEnabled(false)
+	case creating:
+		return createUpdate(msg, m)
+
+	case deleting:
+		return deleteUpdate(msg, m)
+
+	case merge:
+		return mergeUpdate(msg, m)
+
+	case rebasing:
+		return rebaseUpdate(msg, m)
+
+	case renaming:
+		return renameUpdate(msg, m)
 
 	default:
-		m.keyMap.Enter.SetEnabled(true)
-		m.keyMap.Create.SetEnabled(true)
-		m.keyMap.Delete.SetEnabled(true)
-		m.keyMap.Merge.SetEnabled(true)
-		m.keyMap.Rebase.SetEnabled(true)
-		m.keyMap.Track.SetEnabled(true)
-		m.keyMap.ForceQuit.SetEnabled(true)
+		return m, nil
+	}
+}
 
-		m.keyMap.Cancel.SetEnabled(false)
+func (m Model) View() string {
+	switch m.state {
+	case browsing:
+		return "\n" + m.list.View()
+
+	case creating:
+		return m.createView()
+
+	case deleting:
+		return m.deleteView()
+
+	case merge:
+		return m.mergeView()
+
+	case rebasing:
+		return m.rebaseView()
+
+	case renaming:
+		return m.renameView()
+
+	default:
+		return ""
 	}
 }
