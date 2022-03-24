@@ -46,6 +46,7 @@ func mergeUpdate(msg tea.Msg, m Model) (tea.Model, tea.Cmd) {
 			case "n", "N":
 				m.merge.confirmInput.Reset()
 				m.state = browsing
+				m.keyMap.State = "browsing"
 				m.updateKeybindins()
 
 			default:
@@ -55,6 +56,7 @@ func mergeUpdate(msg tea.Msg, m Model) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keyMap.Cancel):
 			m.merge.confirmInput.Reset()
 			m.state = browsing
+			m.keyMap.State = "browsing"
 			m.updateKeybindins()
 		}
 

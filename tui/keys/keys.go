@@ -13,6 +13,7 @@ type KeyMap struct {
 	Track      key.Binding
 	Merge      key.Binding
 	Rebase     key.Binding
+	Rename     key.Binding
 	Cancel     key.Binding
 	Quit       key.Binding
 	ForceQuit  key.Binding
@@ -23,10 +24,7 @@ type KeyMap struct {
 func (k KeyMap) ShortHelp() []key.Binding {
 	var kb []key.Binding
 
-	if k.State == "creating" ||
-		k.State == "deleting" ||
-		k.State == "merge" ||
-		k.State == "rebasing" {
+	if k.State != "browsing" {
 		kb = append(kb, k.Cancel, k.ForceQuit)
 	}
 
@@ -77,11 +75,15 @@ func NewKeyMap() *KeyMap {
 			),
 		),
 		Rebase: key.NewBinding(
-			key.WithKeys("ctrl+r"),
+			key.WithKeys("ctrl+u"),
 			key.WithHelp(
-				"ctrl+r",
+				"ctrl+u",
 				"Rebase the currently selected branch, with confirmation",
 			),
+		),
+		Rename: key.NewBinding(
+			key.WithKeys("ctrl+r"),
+			key.WithHelp("ctrl+r", "Rename the currently selected branch"),
 		),
 		Cancel: key.NewBinding(
 			key.WithKeys("esc"),

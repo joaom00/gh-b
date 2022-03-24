@@ -90,6 +90,7 @@ func createUpdate(msg tea.Msg, m Model) (tea.Model, tea.Cmd) {
 				m.create.inputs[1].Reset()
 				m.create.showConfirmInput = false
 				m.state = browsing
+				m.keyMap.State = "browsing"
 				m.updateKeybindins()
 
 				return m, nil

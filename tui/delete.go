@@ -45,12 +45,14 @@ func deleteUpdate(msg tea.Msg, m Model) (tea.Model, tea.Cmd) {
 
 					m.updateListItem()
 					m.state = browsing
+					m.keyMap.State = "browsing"
 					m.updateKeybindins()
 				}
 
 			case "n", "N":
 				m.delete.confirmInput.Reset()
 				m.state = browsing
+				m.keyMap.State = "browsing"
 				m.updateKeybindins()
 
 			default:
@@ -60,6 +62,7 @@ func deleteUpdate(msg tea.Msg, m Model) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keyMap.Cancel):
 			m.delete.confirmInput.Reset()
 			m.state = browsing
+			m.keyMap.State = "browsing"
 			m.updateKeybindins()
 		}
 	case tea.WindowSizeMsg:

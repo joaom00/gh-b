@@ -29,4 +29,5 @@ gh b
 | <kbd>Ctrl+d</kbd>   | Delete the currently selected branch, with confirmation |
 | <kbd>Ctrl+t</kbd>   | Track the currently selected branch, with confirmation  |
 | <kbd>Ctrl+y</kbd>   | Merge the currently selected branch, with confirmation  |
-| <kbd>Ctrl+r</kbd>   | Rebase the currently selected branch, with confirmation |
+| <kbd>Ctrl+u</kbd>   | Rebase the currently selected branch, with confirmation |
+| <kbd>Ctrl+r</kbd>   | Rename the currently selected branch                    |

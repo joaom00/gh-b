@@ -60,6 +60,6 @@ func (d itemDelegate) ShortHelp() []key.Binding {
 
 func (d itemDelegate) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{d.keys.Track, d.keys.Create, d.keys.Delete, d.keys.Merge, d.keys.Rebase},
+		{d.keys.Track, d.keys.Create, d.keys.Delete, d.keys.Merge, d.keys.Rebase, d.keys.Rename},
 	}
 }
