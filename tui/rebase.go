@@ -39,6 +39,7 @@ func rebaseUpdate(msg tea.Msg, m Model) (tea.Model, tea.Cmd) {
 					out := git.RebaseBranch(i.Name)
 
 					fmt.Println(m.styles.NormalTitle.Copy().MarginTop(1).Render(out))
+
 					return m, tea.Quit
 				}
 
@@ -68,6 +69,8 @@ func rebaseUpdate(msg tea.Msg, m Model) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) rebaseView() string {
+	title := m.styles.Title.MarginLeft(2).Render("Rebase Branch")
+	help := lipgloss.NewStyle().MarginLeft(4).Render(m.rebase.help.View(m.keyMap))
 	var branchName string
 
 	i, ok := m.list.SelectedItem().(item)
@@ -79,14 +82,15 @@ func (m Model) rebaseView() string {
 
 	label := fmt.Sprintf("Do you really wanna rebase branch \"%s\"? [Y/n]", branchName)
 
-	confirmInput := lipgloss.JoinHorizontal(
-		lipgloss.Left,
-		label,
-		m.rebase.confirmInput.View(),
-	)
+	confirmInput := lipgloss.NewStyle().
+		MarginLeft(4).
+		Render(lipgloss.JoinHorizontal(
+			lipgloss.Left,
+			label,
+			m.rebase.confirmInput.View(),
+		))
 
 	return lipgloss.NewStyle().
 		MarginTop(1).
-		MarginLeft(4).
-		Render(lipgloss.JoinVertical(lipgloss.Left, confirmInput, "\n", m.rebase.help.View(m.keyMap)))
+		Render(lipgloss.JoinVertical(lipgloss.Left, title, "\n", confirmInput, "\n", help))
 }

@@ -38,7 +38,7 @@ func mergeUpdate(msg tea.Msg, m Model) (tea.Model, tea.Cmd) {
 					i.Name = strings.TrimSuffix(i.Name, "*")
 					out := git.MergeBranch(i.Name)
 
-					fmt.Println(m.styles.NormalTitle.Render(out))
+					fmt.Println(m.styles.NormalTitle.Copy().MarginTop(1).Render(out))
 
 					return m, tea.Quit
 				}
@@ -71,6 +71,9 @@ func mergeUpdate(msg tea.Msg, m Model) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) mergeView() string {
+	title := m.styles.Title.MarginLeft(2).Render("Merge Branch")
+	help := lipgloss.NewStyle().MarginLeft(4).Render(m.merge.help.View(m.keyMap))
+
 	var branchName string
 
 	i, ok := m.list.SelectedItem().(item)
@@ -82,14 +85,15 @@ func (m Model) mergeView() string {
 
 	label := fmt.Sprintf("Do you really wanna merge branch \"%s\"? [Y/n]", branchName)
 
-	confirmInput := lipgloss.JoinHorizontal(
-		lipgloss.Left,
-		label,
-		m.merge.confirmInput.View(),
-	)
+	confirmInput := lipgloss.NewStyle().
+		MarginLeft(4).
+		Render(lipgloss.JoinHorizontal(
+			lipgloss.Left,
+			label,
+			m.merge.confirmInput.View(),
+		))
 
 	return lipgloss.NewStyle().
 		MarginTop(1).
-		MarginLeft(4).
-		Render(lipgloss.JoinVertical(lipgloss.Left, confirmInput, "\n", m.merge.help.View(m.keyMap)))
+		Render(lipgloss.JoinVertical(lipgloss.Left, title, "\n", confirmInput, "\n", help))
 }

@@ -81,7 +81,7 @@ func createUpdate(msg tea.Msg, m Model) (tea.Model, tea.Cmd) {
 			case "y", "Y", "":
 				out := git.CreateBranch(m.create.inputs[0].Value())
 
-				fmt.Println(m.styles.NormalTitle.Render(out))
+				fmt.Println(m.styles.NormalTitle.Copy().MarginTop(1).Render(out))
 
 				return m, tea.Quit
 
