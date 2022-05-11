@@ -68,7 +68,7 @@ func renameUpdate(msg tea.Msg, m Model) (tea.Model, tea.Cmd) {
 func (m Model) renameView() string {
 	m.rename.input.Placeholder = strings.TrimSuffix(m.list.SelectedItem().(item).Name, "*")
 
-	title := m.styles.Title.MarginLeft(2).Render("Rename your branch")
+	title := m.styles.Title.MarginLeft(2).Render("Rename Branch")
 	textInput := lipgloss.NewStyle().MarginLeft(4).Render(m.rename.input.View())
 	help := lipgloss.NewStyle().MarginLeft(4).Render(m.create.help.View(m.keyMap))
 

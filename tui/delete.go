@@ -3,7 +3,6 @@ package tui
 import (
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
@@ -39,14 +38,11 @@ func deleteUpdate(msg tea.Msg, m Model) (tea.Model, tea.Cmd) {
 					i.Name = strings.TrimSuffix(i.Name, "*")
 					out := git.DeleteBranch(i.Name)
 
-					fmt.Println(m.styles.NormalTitle.Render(out))
-
-					time.Sleep(time.Second * 1)
-
 					m.updateListItem()
 					m.state = browsing
 					m.keyMap.State = "browsing"
 					m.updateKeybindins()
+					m.list.NewStatusMessage(out)
 				}
 
 			case "n", "N":
@@ -76,6 +72,9 @@ func deleteUpdate(msg tea.Msg, m Model) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) deleteView() string {
+	title := m.styles.Title.MarginLeft(2).Render("Delete Branch")
+	help := lipgloss.NewStyle().MarginLeft(4).Render(m.delete.help.View(m.keyMap))
+
 	var branchName string
 
 	if i, ok := m.list.SelectedItem().(item); ok {
@@ -86,14 +85,15 @@ func (m Model) deleteView() string {
 
 	label := fmt.Sprintf("Do you really wanna delete branch \"%s\"? [Y/n]", branchName)
 
-	confirmInput := lipgloss.JoinHorizontal(
-		lipgloss.Left,
-		label,
-		m.delete.confirmInput.View(),
-	)
+	confirmInput := lipgloss.NewStyle().
+		MarginLeft(4).
+		Render(lipgloss.JoinHorizontal(
+			lipgloss.Left,
+			label,
+			m.delete.confirmInput.View(),
+		))
 
 	return lipgloss.NewStyle().
 		MarginTop(1).
-		MarginLeft(4).
-		Render(lipgloss.JoinVertical(lipgloss.Left, confirmInput, "\n", m.delete.help.View(m.keyMap)))
+		Render(lipgloss.JoinVertical(lipgloss.Left, title, "\n", confirmInput, "\n", help))
 }
