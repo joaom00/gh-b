@@ -89,13 +89,5 @@ func NewKeyMap() *KeyMap {
 			key.WithKeys("esc"),
 			key.WithHelp("esc", "Cancel"),
 		),
-		Quit: key.NewBinding(
-			key.WithKeys("q"),
-			key.WithHelp("q", "Quit"),
-		),
-		ForceQuit: key.NewBinding(
-			key.WithKeys("ctrl+c"),
-			key.WithHelp("ctrl+c", "Force quit"),
-		),
 	}
 }

@@ -12,7 +12,7 @@ type Branch struct {
 	IsRemote      bool
 }
 
-const format = `branch:%(refname:short)%(HEAD)
+const FORMAT = `branch:%(refname:short)%(if)%(HEAD)%(then)[current]%(end)
 authorname:%(authorname)
 committerdate:%(committerdate:relative)
 `
@@ -27,7 +27,7 @@ func getLocalBranches(branches []Branch) ([]Branch, error) {
 		"--sort",
 		"-upstream",
 		"--format",
-		format,
+		FORMAT,
 	)
 
 	out, err := cmd.CombinedOutput()
@@ -64,7 +64,7 @@ func getRemoteBranches(branches []Branch) ([]Branch, error) {
 		"--sort",
 		"-upstream",
 		"--format",
-		format,
+		FORMAT,
 	)
 
 	out, err := cmd.CombinedOutput()

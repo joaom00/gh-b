@@ -119,7 +119,6 @@ func (m *Model) updateKeybindins() {
 	case creating, deleting, merge, rebasing, renaming:
 		m.keyMap.Enter.SetEnabled(true)
 		m.keyMap.Cancel.SetEnabled(true)
-		m.keyMap.ForceQuit.SetEnabled(true)
 
 		m.keyMap.Quit.SetEnabled(false)
 		m.keyMap.Delete.SetEnabled(false)
@@ -136,7 +135,6 @@ func (m *Model) updateKeybindins() {
 		m.keyMap.Merge.SetEnabled(true)
 		m.keyMap.Rebase.SetEnabled(true)
 		m.keyMap.Track.SetEnabled(true)
-		m.keyMap.ForceQuit.SetEnabled(true)
 
 		m.keyMap.Cancel.SetEnabled(false)
 
@@ -147,7 +145,6 @@ func (m *Model) updateKeybindins() {
 		m.keyMap.Merge.SetEnabled(true)
 		m.keyMap.Rebase.SetEnabled(true)
 		m.keyMap.Track.SetEnabled(true)
-		m.keyMap.ForceQuit.SetEnabled(true)
 
 		m.keyMap.Cancel.SetEnabled(false)
 	}
@@ -253,16 +250,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.keyMap.Enter.SetEnabled(false)
 	}
 
-	switch msg := msg.(type) {
-	case tea.KeyMsg:
-		switch {
-		case key.Matches(msg, m.keyMap.Quit):
-			return m, tea.Quit
-
-		case key.Matches(msg, m.keyMap.ForceQuit):
-			return m, tea.Quit
-		}
-	}
 	switch m.state {
 	case browsing:
 		return listUpdate(msg, m)
