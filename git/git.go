@@ -12,7 +12,7 @@ type Branch struct {
 	IsRemote      bool
 }
 
-const FORMAT = `branch:%(refname:short)%(if)%(HEAD)%(then)[current]%(end)
+const FORMAT = `branch:%(refname:short)%(if)%(HEAD)%(then)*%(end)
 authorname:%(authorname)
 committerdate:%(committerdate:relative)
 `
